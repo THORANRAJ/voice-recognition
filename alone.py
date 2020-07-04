@@ -4,9 +4,14 @@ Created on Sat Feb 29 12:53:25 2020
 
 @author: Thoranraj
 """
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Feb 29 12:53:25 2020
+
+@author: Thoranraj
+"""
 from tkinter import *
 import random
-import time
 import sqlite3
 from tkinter import ttk
 import tkinter as tk
@@ -112,15 +117,15 @@ def thor1():
 
     nationality.set('select')
       
- #   bu1=Button(abc,text="show",bd=8,command=show)
-#    bu1.grid(row=11,column=1)
+   # bu1=Button(abc,text="show",bd=8,command=show)
+   # bu1.grid(row=11,column=1)
 
 
-    bu2=Button(abc,text="submit",bd=8,command=database)
+    bu2=Button(abc,text="Submit",bd=8,command=database)
     bu2.grid(row=11,column=3)
 
     
-    bu2=Button(abc,text="exit",bd=8,command=root.destroy)
+    bu2=Button(abc,text="Next",bd=8,command=root.destroy)
     bu2.grid(row=11,column=8)
 
 
@@ -141,11 +146,9 @@ def thor2():
             l=text.split()
             tree1(l)
 #           
-        except:
-            print('sorry could not recognize your voice')
-
-
-
+        except Exception as e:
+            print(e)
+            
 root2 = Tk()
 root2.geometry('500x500')
 root2.title("voice recognition")
@@ -155,13 +158,67 @@ pdtname=StringVar()
 quantity=IntVar()
 price=IntVar()
 #rand=IntVar()
+a=IntVar()
 
+def buy(tree):
+    roo=Tk()
+    roo.title("buy")
+    roo.configure(background="navy blue")
+    roo.geometry("300x300")
+    w=Label(roo,text="quantity",bd=8,padx=2)
+    w.grid(row=3,column=0)
+
+    e=Entry(roo,textvariable=a)
+    e.grid(row=3,column=1)
+    
+    pdt_id=tree.focus()
+    ty=tree.item(pdt_id)
+    pid=ty['values'][0]
+    def dd():
+        ap=e.get()
+        top=Toplevel()
+        w=Label(top,text="price",bd=8,padx=2)
+        w.grid(row=1,column=0)
+        y=Label(top,text="quantity",bd=8,padx=2)
+        y.grid(row=2,column=0)
+        pr=IntVar()
+        
+        pr.set(ty['values'][3]*int(ap))
+        e2=Entry(top,textvariable=pr,state='disabled')
+        e2.grid(row=1,column=1)
+        e1=Entry(top)
+        e1.insert(END,str(ap))
+        e1.config(state='disabled')
+        e1.grid(row=2,column=1)
+        def confirm():
+            try:
+                if int(ty['values'][2]) < int(ap):
+                    raise Exception("Insufficient quantity")
+                connt=sqlite3.connect("Form99.db")
+                cursor = connt.cursor()
+                str1 = "update `pdttab` set quantity = quantity - " + str(ap) + " where pdt_id = " +str(pid)
+                print(ap,pid)
+                cursor.execute(str1)
+                connt.commit()
+                connt.close()
+                #cursor.execute("update 'pdttab' set quantity=quantity-? where pdt_id=?",(str(ap),str(pid)))
+            except Exception  as e:
+                 messagebox.showinfo("INFORMATION",e)
+
+                #print(e)
+            top.withdraw()
+        bu1=Button(top,text="confirm",bd=8,command=confirm)
+        bu1.grid(row=3,column=1)
+        roo.withdraw()
+        
+    b1=Button(roo,text="buy",bd=8,command=dd)
+    b1.grid(row=5,column=0)
 def tree1(l):
     top=Toplevel()
-    top.configure(bg="blue")
+    #top.configure(bg="blue")
     connt=sqlite3.connect("Form99.db")
     cursor = connt.cursor()
-    cursor.execute("select distinct pdt_id, pdtname,quantity,price from `pdttab1` where pdtname='%s'"%l[0])
+    cursor.execute("select distinct pdt_id, pdtname,quantity,price from `pdttab` where pdtname='%s'"%l[0])
     tree=ttk.Treeview(top, column=("column1", "column2","column3","column4"), show='headings')
     tree.heading("#1", text="PRODUCT ID")
     tree.heading("#2", text="PRODUCT NAME")
@@ -171,6 +228,11 @@ def tree1(l):
     for row1 in cursor.fetchall():
         tree.insert("", tk.END, values=row1)
     cursor.close()  
+    def delete():
+        buy(tree)
+        top.withdraw()
+    bu1=Button(top,text="order",bd=8,command=delete)
+    bu1.grid(row=2,column=6)
 def database1():
     pdt_id1=pdt_id.get()
     pdtname1=pdtname.get()
@@ -179,25 +241,17 @@ def database1():
     conn = sqlite3.connect('Form99.db')
     with conn:
         cursor=conn.cursor()
-        cursor.execute("""create table if not exists `pdttab1`(pdt_id int(10), pdtname text,quantity int(10),price int(10))""")
-        cursor.execute("INSERT INTO `pdttab1`(pdt_id, pdtname,quantity,price) values(1,'apple',4,100)")#,(pdt_id1,pdtname1,quantity1,price1))
-        cursor.execute("INSERT INTO `pdttab1`(pdt_id, pdtname,quantity,price) values(2,'oranges',5,200)")#,(pdt_id1,pdtname1,quantity1,price1))
-        cursor.execute("INSERT INTO `pdttab1`(pdt_id, pdtname,quantity,price) values(3,'mangoes',6,55)")#,(pdt_id1,pdtname1,quantity1,price1))
-        cursor.execute("INSERT INTO `pdttab1`(pdt_id, pdtname,quantity,price) values(4,'banana',7,40)")#,(pdt_id1,pdtname1,quantity1,price1))
-        cursor.execute("INSERT INTO `pdttab1`(pdt_id, pdtname,quantity,price) values(5,'watermelon',8,100)")#,(pdt_id1,pdtname1,quantity1,price1))
-        cursor.execute("INSERT INTO `pdttab1`(pdt_id, pdtname,quantity,price) values(6,'strawberry',20,200)")#,(pdt_id1,pdtname1,quantity1,price1))
-        cursor.execute("INSERT INTO `pdttab1`(pdt_id, pdtname,quantity,price) values(7,'gauva',56,15)")#,(pdt_id1,pdtname1,quantity1,price1))
+        cursor.execute("""create table if not exists `pdttab`(pdt_id int(10), pdtname text,quantity int(10),price int(10))""")
         conn.commit()
         
 def show11():
     conn=sqlite3.connect('Form99.db')
     with conn:
         cursor=conn.cursor()
-        cursor.execute("select * from `pdttab1`")
+        cursor.execute("select * from `pdttab`")
         for i in cursor.fetchall():
             print("\t",i)
                             
-
 def voice():
    
     #options=["INDIAN","AMERICAN","UK","AUSTRALIAN","OTHERS"]
@@ -210,6 +264,7 @@ def voice():
     q.grid(row=2,column=0)
     ew=Entry(abc)
     ew.grid(row=2,column=1)
+   
     bu1=Button(abc,text="search",bd=8,command=thor2)
     bu1.grid(row=11,column=1)
     #show11()
